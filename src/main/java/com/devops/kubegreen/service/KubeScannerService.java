@@ -80,7 +80,7 @@ public class KubeScannerService {
             System.out.printf("\n💰 TOTAL POTENTIAL SAVINGS: $%.2f / Month%n", totalClusterSavings);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error");
         }
     }
 
