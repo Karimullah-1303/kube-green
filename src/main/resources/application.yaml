@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: kube-green
+
+logging:
+  level:
+    io:
+      kubernetes:
+        client: INFO
