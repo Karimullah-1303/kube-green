@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-kube-app
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: green-kube
+  template:
+    metadata:
+      labels:
+        app: green-kube
+    spec:
+      containers:
+        - name: operator
+          image: docker.io/karimullah1303/green-kube:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
