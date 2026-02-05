@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: green-kube-service
+  name: kube-green-service
   namespace: default
 spec:
   selector:
-    app: green-kube
+    app: kube-green
   ports:
     - protocol: TCP
       port: 80

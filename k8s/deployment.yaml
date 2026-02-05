@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: green-kube-app
+  name: kube-green-app
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: green-kube
+      app: kube-green
   template:
     metadata:
       labels:
-        app: green-kube
+        app: kube-green
     spec:
       containers:
         - name: operator
