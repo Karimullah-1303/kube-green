@@ -1,71 +1,82 @@
-name: Green Kube CI/CD pipeline
+# 1. NAME: The name that appears in the GitHub Actions tab
+name: Green Kube CI/CD Pipeline
 
+# 2. TRIGGERS: When should this run?
 on:
   push:
-    branches: ["master"]
+    branches: [ "main" ]       # Run when code is pushed to main
   pull_request:
-    branches: ["master"]
+    branches: [ "main" ]       # Run when a PR is opened
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '0 0 * * *'        # Run every night at midnight (Cron syntax)
 
+# 3. ENV: Global variables (like Java Constants)
 env:
-  JAVA_VERSION: '21'
+  JAVA_VERSION: '17'
   APP_NAME: 'green-kube-operator'
 
+# 4. JOBS: Grouping of tasks. Jobs run in PARALLEL by default.
 jobs:
+  # JOB 1: TEST & BUILD
   build-and-test:
     name: Build Java App
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-latest    # The computer (runner) GitHub gives you
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout
+      # Step A: Get the code
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 21
-        uses: actions/setup-java
+      # Step B: Setup Java
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-          cache: maven
+          cache: maven        # Speed up builds by caching dependencies
 
-      - name: Build with maven
+      # Step C: Run the Maven build (Shell command)
+      - name: Build with Maven
         run: mvn package --file pom.xml
 
+      # Step D: Save the JAR file so other jobs can use it (Artifacts)
       - name: Upload JAR Artifact
         uses: actions/upload-artifact@v3
         with:
           name: built-jar
           path: target/*.jar
 
-
+  # JOB 2: DOCKER PUBLISH (Runs ONLY if Job 1 passes)
   push-docker:
     name: Push to Docker Hub
     runs-on: ubuntu-latest
-    needs: build-and-test
-
+    needs: build-and-test     # <--- DEPENDENCY: Waits for Job 1 to finish
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login.action
+      # Step E: Use Secrets (Never type passwords in code!)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker Image
-        if: github.event_name == 'push'
-        uses: docker/build-push-action
+      # Step F: Logic (Conditional)
+      - name: Build and Push Docker Image
+        if: github.event_name == 'push'  # Only push if it's a real merge, not a PR
+        uses: docker/build-push-action@v4
         with:
           push: true
-          tags: karim/green-kube:latest
+          tags: rushik/green-kube:latest
 
-
+  # JOB 3: NOTIFY (Runs if anything FAILS)
   notify-failure:
     runs-on: ubuntu-latest
     needs: [build-and-test, push-docker]
-    if: failure()
-
+    if: failure()             # <--- CONDITIONAL: Only runs if previous jobs failed
+    
     steps:
-      - name: Send Specific alert
-        run: echo "The pipeline failed!"
+      - name: Send specific alert
+        run: echo "The pipeline failed! Check the logs."
