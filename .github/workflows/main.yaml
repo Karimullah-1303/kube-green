@@ -4,9 +4,9 @@ name: Green Kube CI/CD Pipeline
 # 2. TRIGGERS: When should this run?
 on:
   push:
-    branches: [ "main" ]       # Run when code is pushed to main
+    branches: [ "master" ]       # Run when code is pushed to main
   pull_request:
-    branches: [ "main" ]       # Run when a PR is opened
+    branches: [ "master" ]       # Run when a PR is opened
   schedule:
     - cron: '0 0 * * *'        # Run every night at midnight (Cron syntax)
 
