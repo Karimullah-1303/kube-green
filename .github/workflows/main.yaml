@@ -1,0 +1,71 @@
+name: Green Kube CI/CD pipeline
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  schedule:
+    - cron: '0 0 * * *'
+
+env:
+  JAVA_VERSION: '21'
+  APP_NAME: 'green-kube-operator'
+
+jobs:
+  build-and-test:
+    name: Build Java App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Build with maven
+        run: mvn package --file pom.xml
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-jar
+          path: target/*.jar
+
+
+  push-docker:
+    name: Push to Docker Hub
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login.action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker Image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: karim/green-kube:latest
+
+
+  notify-failure:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, push-docker]
+    if: failure()
+
+    steps:
+      - name: Send Specific alert
+        run: echo "The pipeline failed!"
