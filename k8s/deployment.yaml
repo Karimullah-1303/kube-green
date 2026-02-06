@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kube-green-app
-  namespace: default
+
 spec:
   replicas: 1
   selector:
