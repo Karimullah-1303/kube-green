@@ -52,7 +52,14 @@ public class KubeScannerService {
 
                 // --- CPU CALC ---
                 double cpuReq = getCpuRequest(pod);
-                double cpuUsed = getCpuUsage(metrics);
+                if(cpuReq == 0.0){
+                    System.out.println("Warning: Pod" + podName + " has no cpu limits set");
+                    cpuReq = 0.1;
+                }
+                double cpuUsed = 0.0;
+                if(metrics!=null&&metrics.getContainers()!=null){
+                    cpuUsed=getCpuUsage(metrics);
+                }
                 double cpuWaste = cpuReq - cpuUsed;
                 // CPU Cost: ~$0.0315 per Core/Hour (approx $23/month per core)
                 double cpuCost = (cpuWaste > 0) ? (cpuWaste / 1000.0) * 0.0315 * 730 : 0.0;

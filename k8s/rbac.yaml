@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kube-green-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "persistentvolumeclaims", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-green-reader-binding  # Fixed typo (was "binidng")
+subjects:
+  - kind: ServiceAccount
+    name: default                    # Grants permission to the default SA
+    namespace: kube-green-dev        # In the kube-green-dev namespace
+roleRef:
+  kind: ClusterRole
+  name: kube-green-reader
+  apiGroup: rbac.authorization.k8s.io
